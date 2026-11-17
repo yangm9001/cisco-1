@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cisco IOS Basic Setup: Study Guide</title>
+    <link rel="stylesheet" href="css.css">
+</head>
+<body>
+<main>
+
+    <header class="guide-header">
+        <h1>Cisco IOS Basic Setup</h1>
+        <p>Study guide: command modes, passwords, banners, IP addressing, and the commands you will use most.</p>
+    </header>
+
+    <nav class="toc" aria-label="Contents">
+        <h2>Contents</h2>
+        <ol>
+            <li><a href="#modes">Command modes</a></li>
+            <li><a href="#passwords">Configure passwords</a></li>
+            <li><a href="#encrypt">Encrypt passwords</a></li>
+            <li><a href="#banner">Banner messages</a></li>
+            <li><a href="#ip">Configure an IP address</a></li>
+            <li><a href="#reference">Command reference</a></li>
+            <li><a href="#quiz">Check yourself</a></li>
+        </ol>
+    </nav>
+
+    <!-- ========== COMMAND MODES ========== -->
+    <section class="topic" id="modes">
+        <h2>Command modes</h2>
+        <p class="goal"><strong>Goal:</strong> know which mode you are in from the prompt, and how to move between modes. Each mode has its own color in this guide, and each one sits deeper than the one before.</p>
+
+        <ol class="ladder">
+            <li class="mode mode--user">
+                <h3>User EXEC mode <code class="prompt">Switch&gt;</code></h3>
+                <ul>
+                    <li>Default mode when you connect to a Cisco device</li>
+                    <li>Limited set of commands available</li>
+                </ul>
+            </li>
+
+            <li class="mode mode--priv">
+                <h3>Privileged EXEC mode <code class="prompt">Switch#</code></h3>
+                <p class="how">Enter with <code>enable</code> from User EXEC mode.</p>
+                <ul>
+                    <li>Access to advanced commands and configuration options</li>
+                </ul>
+            </li>
+
+            <li class="mode mode--global">
+                <h3>Global configuration mode <code class="prompt">Switch(config)#</code></h3>
+                <p class="how">Enter with <code>configure terminal</code> from Privileged EXEC mode.</p>
+                <ul>
+                    <li>Configure the device's overall settings and parameters</li>
+                </ul>
+            </li>
+
+            <li class="mode mode--iface">
+                <h3>Interface configuration mode <code class="prompt">Switch(config-if)#</code></h3>
+                <p class="how">Enter with <code>interface</code> plus the interface identifier, from Global configuration mode.</p>
+                <ul>
+                    <li>Configure a specific interface on the device</li>
+                </ul>
+            </li>
+
+            <li class="mode mode--line">
+                <h3>Line configuration mode <code class="prompt">Switch(config-line)#</code></h3>
+                <p class="how">Enter with <code>line</code> plus the line identifier, from Global configuration mode.</p>
+                <ul>
+                    <li>Configure a specific line, such as the console or VTY lines</li>
+                </ul>
+            </li>
+        </ol>
+
+        <h3>Moving through the modes</h3>
+<pre class="terminal"><span class="p-user">Switch&gt;</span> enable
+<span class="p-priv">Switch#</span> configure terminal
+<span class="p-global">Switch(config)#</span> interface vlan 1
+<span class="p-iface">Switch(config-if)#</span> exit
+<span class="p-global">Switch(config)#</span> line console 0
+<span class="p-line">Switch(config-line)#</span> end
+<span class="p-priv">Switch#</span> disable
+<span class="p-user">Switch&gt;</span></pre>
+
+        <div class="note">
+            <strong>Remember</strong>
+            <p><code>exit</code> goes back one level. <code>end</code> (or Ctrl+Z) jumps straight back to Privileged EXEC mode.</p>
+        </div>
+    </section>
+
+    <!-- ========== PASSWORDS ========== -->
+    <section class="topic" id="passwords">
+        <h2>Configure passwords</h2>
+        <p class="goal"><strong>Goal:</strong> protect Privileged EXEC mode and the console and remote-access lines.</p>
+
+        <dl class="cmd-list">
+            <dt><code>enable password</code> <em>&lt;password&gt;</em></dt>
+            <dd>Sets the password for Privileged EXEC mode</dd>
+            <dd>Stored as plain text unless <code>service password-encryption</code> is on</dd>
+
+            <dt><code>enable secret</code> <em>&lt;password&gt;</em></dt>
+            <dd>Sets the password for Privileged EXEC mode, stored as a hash (more secure)</dd>
+            <dd>If both are set, <code>enable secret</code> is the one that is used</dd>
+        </dl>
+
+        <p class="terminal-label">Privileged EXEC password</p>
+<pre class="terminal"><span class="p-global">Switch(config)#</span> enable password <span class="arg">mypassword</span>
+<span class="p-global">Switch(config)#</span> enable secret <span class="arg">mysecretpassword</span></pre>
+
+        <p class="terminal-label">Console line password</p>
+<pre class="terminal"><span class="p-global">S1(config)#</span> line console 0
+<span class="p-line">S1(config-line)#</span> password <span class="arg">&lt;password&gt;</span>
+<span class="p-line">S1(config-line)#</span> login</pre>
+
+        <p class="terminal-label">Remote (VTY) lines, same pattern</p>
+<pre class="terminal"><span class="p-global">S1(config)#</span> line vty 0 15
+<span class="p-line">S1(config-line)#</span> password <span class="arg">&lt;password&gt;</span>
+<span class="p-line">S1(config-line)#</span> login</pre>
+
+        <div class="warn">
+            <strong>Easy to forget</strong>
+            <p>A line password does nothing until you also enter <code>login</code>, which tells the line to ask for it.</p>
+        </div>
+    </section>
+
+    <!-- ========== ENCRYPT ========== -->
+    <section class="topic" id="encrypt">
+        <h2>Encrypt passwords</h2>
+
+        <dl class="cmd-list">
+            <dt><code>service password-encryption</code></dt>
+            <dd>Scrambles all plain-text passwords in the configuration file</dd>
+        </dl>
+
+<pre class="terminal"><span class="p-global">Switch(config)#</span> service password-encryption</pre>
+
+        <div class="note">
+            <strong>Remember</strong>
+            <p>This encryption is weak. It only keeps someone from reading a password over your shoulder. <code>enable secret</code> is the stronger protection.</p>
+        </div>
+    </section>
+
+    <!-- ========== BANNER ========== -->
+    <section class="topic" id="banner">
+        <h2>Banner messages</h2>
+
+        <dl class="cmd-list">
+            <dt><code>banner motd</code> <em>#message#</em></dt>
+            <dd>Displays a message of the day when someone connects</dd>
+            <dd>The <code>#</code> is a delimiter. It marks where the message starts and ends, so the message itself cannot contain that character.</dd>
+        </dl>
+
+<pre class="terminal"><span class="p-global">Switch(config)#</span> banner motd #<span class="arg">Authorized access only</span>#</pre>
+    </section>
+
+    <!-- ========== IP ADDRESS ========== -->
+    <section class="topic" id="ip">
+        <h2>Configure an IP address</h2>
+        <p class="goal"><strong>Goal:</strong> give the switch an address so you can manage it remotely, using the management VLAN interface.</p>
+
+<pre class="terminal"><span class="p-global">SW1(config)#</span> interface vlan 1
+<span class="p-iface">SW1(config-if)#</span> ip address <span class="arg">192.168.1.1 255.255.255.0</span>
+<span class="p-iface">SW1(config-if)#</span> no shutdown</pre>
+
+        <ol>
+            <li>Enter the interface: <code>interface vlan 1</code></li>
+            <li>Set the address and subnet mask: <code>ip address</code></li>
+            <li>Turn the interface on: <code>no shutdown</code></li>
+        </ol>
+    </section>
+
+    <!-- ========== REFERENCE ========== -->
+    <section class="topic" id="reference">
+        <h2>Command reference</h2>
+        <p class="goal"><strong>Goal:</strong> the quick-lookup list. The tag shows the mode you type each command in.</p>
+
+        <div class="table-wrap">
+            <table class="ref">
+                <caption>Navigation and sessions</caption>
+                <thead><tr><th>Command</th><th>What it does</th><th>Mode</th></tr></thead>
+                <tbody>
+                    <tr><td><code>enable</code> or <code>en</code></td><td>Enter Privileged EXEC mode</td><td><span class="tag tag--user">User EXEC</span></td></tr>
+                    <tr><td><code>disable</code></td><td>Return to User EXEC mode</td><td><span class="tag tag--priv">Privileged</span></td></tr>
+                    <tr><td><code>configure terminal</code> or <code>config t</code></td><td>Enter Global configuration mode</td><td><span class="tag tag--priv">Privileged</span></td></tr>
+                    <tr><td><code>exit</code></td><td>Go back one mode level</td><td><span class="tag tag--any">Any</span></td></tr>
+                    <tr><td><code>end</code></td><td>Jump back to Privileged EXEC mode</td><td><span class="tag tag--any">Any config mode</span></td></tr>
+                    <tr><td><code>logout</code></td><td>End the current session</td><td><span class="tag tag--user">User / Privileged</span></td></tr>
+                    <tr><td><code>reload</code></td><td>Restart the device</td><td><span class="tag tag--priv">Privileged</span></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-wrap">
+            <table class="ref">
+                <caption>Show commands</caption>
+                <thead><tr><th>Command</th><th>What it does</th><th>Mode</th></tr></thead>
+                <tbody>
+                    <tr><td><code>show running-config</code> or <code>show run</code></td><td>Display the current configuration (in RAM)</td><td><span class="tag tag--priv">Privileged</span></td></tr>
+                    <tr><td><code>show startup-config</code> or <code>show start</code></td><td>Display the configuration loaded at startup (saved)</td><td><span class="tag tag--priv">Privileged</span></td></tr>
+                    <tr><td><code>show ip interface brief</code></td><td>Brief overview of interface IP addresses and status</td><td><span class="tag tag--priv">Privileged</span></td></tr>
+                    <tr><td><code>show arp</code></td><td>Display the ARP table</td><td><span class="tag tag--priv">Privileged</span></td></tr>
+                    <tr><td><code>show mac address-table</code></td><td>Display the MAC address table</td><td><span class="tag tag--priv">Privileged</span></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="table-wrap">
+            <table class="ref">
+                <caption>Configuration commands</caption>
+                <thead><tr><th>Command</th><th>What it does</th><th>Mode</th></tr></thead>
+                <tbody>
+                    <tr><td><code>copy running-config startup-config</code> or <code>copy run start</code></td><td>Save the current configuration so it survives a restart</td><td><span class="tag tag--priv">Privileged</span></td></tr>
+                    <tr><td><code>hostname NAME</code></td><td>Set the device's hostname</td><td><span class="tag tag--global">Global</span></td></tr>
+                    <tr><td><code>no ip domain-lookup</code></td><td>Stop the device from treating mistyped commands as DNS names</td><td><span class="tag tag--global">Global</span></td></tr>
+                    <tr><td><code>interface vlan 1</code></td><td>Enter configuration for VLAN 1</td><td><span class="tag tag--global">Global</span></td></tr>
+                    <tr><td><code>ip address 192.168.1.1 255.255.255.0</code></td><td>Set an interface's IP address and subnet mask</td><td><span class="tag tag--iface">Interface</span></td></tr>
+                    <tr><td><code>no shutdown</code></td><td>Activate an interface</td><td><span class="tag tag--iface">Interface</span></td></tr>
+                    <tr><td><code>shutdown</code></td><td>Deactivate an interface</td><td><span class="tag tag--iface">Interface</span></td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="warn">
+            <strong>Easy to forget</strong>
+            <p>Changes live in the running configuration only. If you do not run <code>copy running-config startup-config</code>, they are lost on reload.</p>
+        </div>
+    </section>
+
+    <!-- ========== QUIZ ========== -->
+    <section class="topic" id="quiz">
+        <h2>Check yourself</h2>
+        <p class="goal">Answer out loud first, then open the question.</p>
+
+        <details class="check">
+            <summary>Which prompt shows you are in Privileged EXEC mode?</summary>
+            <div class="answer"><p><code>Switch#</code></p></div>
+        </details>
+
+        <details class="check">
+            <summary>How do you get from User EXEC mode to Global configuration mode?</summary>
+            <div class="answer"><p>Type <code>enable</code>, then <code>configure terminal</code>.</p></div>
+        </details>
+
+        <details class="check">
+            <summary>What is the difference between <code>enable password</code> and <code>enable secret</code>?</summary>
+            <div class="answer"><p><code>enable secret</code> is stored as a hash and is used if both are set. <code>enable password</code> is stored as plain text.</p></div>
+        </details>
+
+        <details class="check">
+            <summary>You set a console password but the switch never asks for it. What did you forget?</summary>
+            <div class="answer"><p>The <code>login</code> command on the line.</p></div>
+        </details>
+
+        <details class="check">
+            <summary>What is the difference between <code>exit</code> and <code>end</code>?</summary>
+            <div class="answer"><p><code>exit</code> goes back one level. <code>end</code> goes straight to Privileged EXEC mode.</p></div>
+        </details>
+
+        <details class="check">
+            <summary>Which commands give VLAN 1 an address and turn it on?</summary>
+            <div class="answer"><p><code>interface vlan 1</code>, then <code>ip address 192.168.1.1 255.255.255.0</code>, then <code>no shutdown</code>.</p></div>
+        </details>
+
+        <details class="check">
+            <summary>How do you keep your configuration after a restart?</summary>
+            <div class="answer"><p><code>copy running-config startup-config</code></p></div>
+        </details>
+    </section>
+
+</main>
+<script src="js.js" defer></script>
+</body>
+</html>

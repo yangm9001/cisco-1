@@ -1,0 +1,627 @@
+/* ==========================================================
+   Cisco IOS Study Guide
+   Color = command mode. Each mode keeps the same color
+   everywhere (ladder, prompts, reference table), so the
+   color itself helps you remember which mode you are in.
+   ========================================================== */
+
+:root {
+    --page: #eef2f6;
+    --paper: #ffffff;
+    --ink: #14263a;
+    --ink-soft: #46586b;
+    --rule: #d3dce6;
+
+    --terminal-bg: #10202f;
+    --terminal-ink: #dbe7f3;
+    --terminal-dim: #7f95aa;
+
+    --mode-user: #55657a;
+    --mode-priv: #1f5fa8;
+    --mode-global: #0d7068;
+    --mode-iface: #6d3fc0;
+    --mode-line: #a8520a;
+
+    --note-bg: #e8f3f1;
+    --note-edge: #0d7068;
+    --warn-bg: #fdf1e0;
+    --warn-edge: #a8520a;
+
+    --font-body: "Segoe UI", system-ui, -apple-system, "Helvetica Neue", Arial, sans-serif;
+    --font-code: ui-monospace, "Cascadia Mono", "SF Mono", Consolas, "Liberation Mono", monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --page: #0c1722;
+        --paper: #142332;
+        --ink: #e6eef6;
+        --ink-soft: #9fb2c5;
+        --rule: #263a4d;
+
+        --terminal-bg: #08121b;
+
+        --mode-user: #9fb0c4;
+        --mode-priv: #6aa7ec;
+        --mode-global: #4fc4b8;
+        --mode-iface: #b394f2;
+        --mode-line: #f0a35e;
+
+        --note-bg: #12302f;
+        --note-edge: #4fc4b8;
+        --warn-bg: #33261a;
+        --warn-edge: #f0a35e;
+    }
+}
+
+/* ---------- Base ---------- */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    padding: 2rem 1rem 4rem;
+    background: var(--page);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 1.0625rem;
+    line-height: 1.6;
+}
+
+main {
+    max-width: 52rem;
+    margin: 0 auto;
+}
+
+h1, h2, h3 {
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+p {
+    max-width: 68ch;
+}
+
+a {
+    color: var(--mode-priv);
+}
+
+:focus-visible {
+    outline: 3px solid var(--mode-priv);
+    outline-offset: 2px;
+}
+
+/* ---------- Header and contents ---------- */
+
+.guide-header {
+    margin-bottom: 1.5rem;
+}
+
+.guide-header h1 {
+    margin: 0 0 0.25rem;
+    font-size: clamp(1.9rem, 5vw, 2.6rem);
+}
+
+.guide-header p {
+    margin: 0;
+    color: var(--ink-soft);
+}
+
+.toc {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 2.5rem;
+}
+
+.toc h2 {
+    margin: 0 0 0.5rem;
+    font-size: 1rem;
+    color: var(--ink-soft);
+}
+
+.toc ol {
+    margin: 0;
+    padding-left: 1.25rem;
+    columns: 2 14rem;
+    column-gap: 2rem;
+}
+
+.toc li {
+    margin: 0.2rem 0;
+}
+
+/* ---------- Topic sections ---------- */
+
+.topic {
+    background: var(--paper);
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    padding: 1.5rem 1.5rem 1.75rem;
+    margin-bottom: 2rem;
+    scroll-margin-top: 1rem;
+}
+
+.topic > h2 {
+    margin: 0 0 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 2px solid var(--ink);
+    font-size: 1.5rem;
+}
+
+.topic h3 {
+    margin: 1.75rem 0 0.5rem;
+    font-size: 1.15rem;
+}
+
+.goal {
+    margin: 0 0 1.25rem;
+    color: var(--ink-soft);
+}
+
+.goal strong {
+    color: var(--ink);
+}
+
+/* ---------- Inline code and prompts ---------- */
+
+code,
+kbd {
+    font-family: var(--font-code);
+    font-size: 0.9em;
+}
+
+code {
+    background: color-mix(in srgb, var(--ink) 8%, transparent);
+    padding: 0.1em 0.4em;
+    border-radius: 4px;
+    overflow-wrap: anywhere;
+}
+
+code.prompt {
+    font-weight: 700;
+    color: var(--mode-color, var(--ink));
+    background: color-mix(in srgb, var(--mode-color, var(--ink)) 12%, transparent);
+}
+
+/* ---------- Command mode ladder ---------- */
+
+.ladder {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.9rem;
+}
+
+.mode {
+    --mode-color: var(--mode-user);
+    border: 1px solid var(--rule);
+    border-left: 8px solid var(--mode-color);
+    border-radius: 4px;
+    padding: 0.9rem 1.1rem 1rem;
+    /* Each deeper mode steps in, matching how you move deeper */
+    margin-left: calc(var(--depth, 0) * 1.25rem);
+}
+
+.mode--user   { --mode-color: var(--mode-user);   --depth: 0; }
+.mode--priv   { --mode-color: var(--mode-priv);   --depth: 1; }
+.mode--global { --mode-color: var(--mode-global); --depth: 2; }
+.mode--iface  { --mode-color: var(--mode-iface);  --depth: 3; }
+.mode--line   { --mode-color: var(--mode-line);   --depth: 3; }
+
+.mode h3 {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.4rem 0.9rem;
+    margin: 0 0 0.5rem;
+    font-size: 1.1rem;
+}
+
+.mode h3 .prompt {
+    font-size: 0.9rem;
+}
+
+.mode ul {
+    margin: 0;
+    padding-left: 1.2rem;
+}
+
+.mode li + li {
+    margin-top: 0.2rem;
+}
+
+.mode .how {
+    margin: 0 0 0.5rem;
+}
+
+@media (max-width: 36rem) {
+    .mode {
+        margin-left: calc(var(--depth, 0) * 0.5rem);
+    }
+}
+
+/* ---------- Terminal blocks ---------- */
+
+.terminal {
+    margin: 0.75rem 0 1rem;
+    padding: 1rem 1.1rem;
+    background: var(--terminal-bg);
+    color: var(--terminal-ink);
+    border-radius: 6px;
+    font-family: var(--font-code);
+    font-size: 0.92rem;
+    line-height: 1.7;
+    overflow-x: auto;
+    tab-size: 4;
+}
+
+.terminal .p-user   { color: #a9b8c9; }
+.terminal .p-priv   { color: #7db4f2; }
+.terminal .p-global { color: #5fd0c4; }
+.terminal .p-iface  { color: #c3a8f7; }
+.terminal .p-line   { color: #f4ae6c; }
+.terminal .c        { color: var(--terminal-dim); font-style: italic; }
+.terminal .arg      { color: #ffd479; }
+
+.terminal-label {
+    margin: 1rem 0 0;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* ---------- Callouts ---------- */
+
+.note,
+.warn {
+    margin: 1rem 0;
+    padding: 0.75rem 1rem;
+    border-left: 5px solid var(--note-edge);
+    background: var(--note-bg);
+    border-radius: 0 4px 4px 0;
+}
+
+.warn {
+    border-left-color: var(--warn-edge);
+    background: var(--warn-bg);
+}
+
+.note > :first-child,
+.warn > :first-child {
+    margin-top: 0;
+}
+
+.note > :last-child,
+.warn > :last-child {
+    margin-bottom: 0;
+}
+
+.note strong:first-child,
+.warn strong:first-child {
+    display: block;
+    margin-bottom: 0.15rem;
+}
+
+/* ---------- Definition-style command lists ---------- */
+
+.cmd-list {
+    margin: 0;
+}
+
+.cmd-list dt {
+    margin-top: 1rem;
+}
+
+.cmd-list dd {
+    margin: 0.25rem 0 0 0;
+    padding-left: 1rem;
+    border-left: 3px solid var(--rule);
+}
+
+.cmd-list dd + dd {
+    margin-top: 0.25rem;
+}
+
+/* ---------- Reference table ---------- */
+
+.table-wrap {
+    overflow-x: auto;
+    margin: 0.75rem 0;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+}
+
+table.ref {
+    width: 100%;
+    min-width: 36rem;
+    border-collapse: collapse;
+    font-size: 0.97rem;
+}
+
+table.ref caption {
+    caption-side: top;
+    padding: 0.6rem 0.9rem;
+    text-align: left;
+    font-weight: 600;
+    background: color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+table.ref th,
+table.ref td {
+    padding: 0.55rem 0.9rem;
+    text-align: left;
+    vertical-align: top;
+    border-top: 1px solid var(--rule);
+}
+
+table.ref thead th {
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+    border-top: 0;
+}
+
+table.ref tbody tr:nth-child(even) {
+    background: color-mix(in srgb, var(--ink) 4%, transparent);
+}
+
+table.ref td:first-child {
+    white-space: nowrap;
+}
+
+table.ref td:last-child {
+    white-space: nowrap;
+}
+
+.tag {
+    display: inline-block;
+    padding: 0.05em 0.55em;
+    border-radius: 999px;
+    border: 1.5px solid var(--mode-color);
+    color: var(--mode-color);
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.tag--user   { --mode-color: var(--mode-user); }
+.tag--priv   { --mode-color: var(--mode-priv); }
+.tag--global { --mode-color: var(--mode-global); }
+.tag--iface  { --mode-color: var(--mode-iface); }
+.tag--line   { --mode-color: var(--mode-line); }
+.tag--any    { --mode-color: var(--ink-soft); }
+
+/* ---------- Self-check questions ---------- */
+
+.check {
+    margin: 0.6rem 0;
+    border: 1px solid var(--rule);
+    border-radius: 6px;
+    background: var(--paper);
+}
+
+.check summary {
+    cursor: pointer;
+    padding: 0.7rem 1rem;
+    font-weight: 600;
+    list-style-position: inside;
+}
+
+.check[open] summary {
+    border-bottom: 1px solid var(--rule);
+}
+
+.check .answer {
+    padding: 0.7rem 1rem;
+}
+
+.check .answer p {
+    margin: 0;
+}
+
+/* ---------- Print ---------- */
+
+@media print {
+    :root {
+        --page: #fff;
+        --paper: #fff;
+        --ink: #000;
+        --ink-soft: #333;
+        --rule: #bbb;
+        --terminal-bg: #f2f2f2;
+        --terminal-ink: #000;
+        --terminal-dim: #555;
+    }
+
+    body {
+        padding: 0;
+        font-size: 11pt;
+    }
+
+    .toc {
+        display: none;
+    }
+
+    .topic {
+        break-inside: avoid-page;
+        border: 0;
+        padding: 0;
+    }
+
+    .terminal,
+    .mode,
+    .note,
+    .warn {
+        break-inside: avoid;
+    }
+
+    .terminal .p-user,
+    .terminal .p-priv,
+    .terminal .p-global,
+    .terminal .p-iface,
+    .terminal .p-line,
+    .terminal .arg {
+        color: #000;
+        font-weight: 700;
+    }
+
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+}
+
+/* ==========================================================
+   Interactive features (study-guide.js)
+   ========================================================== */
+
+/* ---------- Copy buttons ---------- */
+
+.terminal-wrap {
+    position: relative;
+    margin: 0.75rem 0 1rem;
+}
+
+.terminal-wrap .terminal {
+    margin: 0;
+    padding-right: 8.5rem;
+}
+
+.copy-btn {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.25rem 0.7rem;
+    font: inherit;
+    font-size: 0.8rem;
+    color: var(--terminal-ink);
+    background: transparent;
+    border: 1px solid var(--terminal-dim);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.copy-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.copy-btn:focus-visible {
+    outline-color: #ffd479;
+}
+
+/* ---------- Progress and reviewed boxes ---------- */
+
+.progress {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 0.9rem;
+    margin-top: 1rem;
+    padding-top: 0.8rem;
+    border-top: 1px solid var(--rule);
+}
+
+.progress-text {
+    font-size: 0.92rem;
+    color: var(--ink-soft);
+}
+
+.progress progress {
+    flex: 1 1 8rem;
+    height: 0.6rem;
+    accent-color: var(--mode-global);
+}
+
+.link-btn {
+    padding: 0;
+    font: inherit;
+    font-size: 0.9rem;
+    color: var(--mode-priv);
+    background: none;
+    border: 0;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.reviewed {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: -0.25rem 0 1rem;
+    font-size: 0.95rem;
+    color: var(--ink-soft);
+    cursor: pointer;
+}
+
+.reviewed input {
+    width: 1.1rem;
+    height: 1.1rem;
+    accent-color: var(--mode-global);
+}
+
+/* ---------- Contents list state ---------- */
+
+.toc a.is-active {
+    font-weight: 700;
+    text-decoration-thickness: 2px;
+}
+
+.toc a.is-reviewed::after {
+    content: " \2713";
+    color: var(--mode-global);
+    font-weight: 700;
+}
+
+/* ---------- Quiz controls ---------- */
+
+.quiz-tools {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0 0 1rem;
+}
+
+.quiz-tools button {
+    padding: 0.35rem 0.9rem;
+    font: inherit;
+    font-size: 0.92rem;
+    color: var(--ink);
+    background: var(--paper);
+    border: 1px solid var(--ink-soft);
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.quiz-tools button:hover {
+    background: color-mix(in srgb, var(--ink) 8%, transparent);
+}
+
+.quiz-count {
+    margin-left: auto;
+    font-size: 0.9rem;
+    color: var(--ink-soft);
+}
+
+@media print {
+    .copy-btn,
+    .quiz-tools,
+    .reviewed,
+    .progress {
+        display: none;
+    }
+
+    .terminal-wrap .terminal {
+        padding-right: 1.1rem;
+    }
+}
